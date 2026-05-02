@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "RoyalWay",
+    "slug": "royalway",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/royalWay.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/royalWay.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#023e8a"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.royalway.app",
+      "config": {
+        "googleMapsApiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/royalWay.png",
+        "backgroundColor": "#023e8a"
+      },
+      "package": "com.royalway.app",
+      "edgeToEdgeEnabled": true,
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+        }
+      }
+    },
+    "web": {
+      "favicon": "./assets/royalWay.png"
+    }
+  }
+}

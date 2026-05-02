@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoyalWay Splash Screen Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #023e8a;
+            text-align: center;
+        }
+        .preview {
+            width: 300px;
+            height: 650px;
+            background: #023e8a;
+            margin: 20px auto;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        #canvas {
+            display: none;
+        }
+        .logo-preview {
+            max-width: 150px;
+            max-height: 150px;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            background: #023e8a;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #035bb5;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .file-label {
+            background: #29bf12;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+            margin: 5px;
+        }
+        .file-label:hover {
+            background: #22a00f;
+        }
+        .instructions {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #023e8a;
+        }
+        .color-input {
+            margin: 10px 0;
+        }
+        .color-input label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        .color-input input {
+            padding: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RoyalWay Splash Screen Generator</h1>
+        
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>Upload your <strong>royalWay.png</strong> file (or any logo)</li>
+                <li>Adjust the background color if needed (default: RoyalWay blue #023e8a)</li>
+                <li>Preview the splash screen</li>
+                <li>Click "Download Splash Screen" to save</li>
+                <li>Save the downloaded file as <code>splash.png</code> in your <code>/MobileApp/assets/</code> folder</li>
+                <li><strong>Note:</strong> Currently configured to use <code>royalWay.png</code> directly!</li>
+            </ol>
+        </div>
+
+        <div class="controls">
+            <label for="logoInput" class="file-label">
+                📁 Upload Logo
+            </label>
+            <input type="file" id="logoInput" accept="image/*">
+            
+            <div class="color-input">
+                <label for="bgColor">Background Color:</label>
+                <input type="color" id="bgColor" value="#023e8a">
+                <input type="text" id="bgColorText" value="#023e8a" style="width: 100px;">
+            </div>
+        </div>
+
+        <div class="preview" id="preview">
+            <img id="logoPreview" class="logo-preview" style="display: none;">
+            <p style="color: white; text-align: center;" id="placeholder">Upload your logo to preview</p>
+        </div>
+
+        <div class="controls">
+            <button onclick="downloadSplash()">Download Splash Screen (1284x2778)</button>
+            <button onclick="downloadIcon()">Download App Icon (1024x1024)</button>
+        </div>
+
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        let logoImage = null;
+
+        // Handle logo upload
+        document.getElementById('logoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    logoImage = new Image();
+                    logoImage.onload = function() {
+                        updatePreview();
+                    };
+                    logoImage.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle color change
+        document.getElementById('bgColor').addEventListener('input', function(e) {
+            document.getElementById('bgColorText').value = e.target.value;
+            updatePreview();
+        });
+
+        document.getElementById('bgColorText').addEventListener('input', function(e) {
+            document.getElementById('bgColor').value = e.target.value;
+            updatePreview();
+        });
+
+        function updatePreview() {
+            const preview = document.getElementById('preview');
+            const logoPreview = document.getElementById('logoPreview');
+            const placeholder = document.getElementById('placeholder');
+            const bgColor = document.getElementById('bgColor').value;
+
+            preview.style.background = bgColor;
+
+            if (logoImage) {
+                logoPreview.src = logoImage.src;
+                logoPreview.style.display = 'block';
+                placeholder.style.display = 'none';
+            }
+        }
+
+        function downloadSplash() {
+            if (!logoImage) {
+                alert('Please upload a logo first!');
+                return;
+            }
+
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Splash screen dimensions (iPhone 14 Pro Max)
+            canvas.width = 1284;
+            canvas.height = 2778;
+
+            // Fill background
+            const bgColor = document.getElementById('bgColor').value;
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Calculate logo size (max 400x400, maintain aspect ratio)
+            const maxLogoSize = 400;
+            let logoWidth = logoImage.width;
+            let logoHeight = logoImage.height;
+            
+            if (logoWidth > maxLogoSize || logoHeight > maxLogoSize) {
+                const ratio = Math.min(maxLogoSize / logoWidth, maxLogoSize / logoHeight);
+                logoWidth *= ratio;
+                logoHeight *= ratio;
+            }
+
+            // Center the logo
+            const x = (canvas.width - logoWidth) / 2;
+            const y = (canvas.height - logoHeight) / 2;
+
+            // Draw logo
+            ctx.drawImage(logoImage, x, y, logoWidth, logoHeight);
+
+            // Download
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'splash.png';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        function downloadIcon() {
+            if (!logoImage) {
+                alert('Please upload a logo first!');
+                return;
+            }
+
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // App icon dimensions
+            canvas.width = 1024;
+            canvas.height = 1024;
+
+            // Fill background
+            const bgColor = document.getElementById('bgColor').value;
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Calculate logo size (max 800x800 with padding, maintain aspect ratio)
+            const maxLogoSize = 800;
+            let logoWidth = logoImage.width;
+            let logoHeight = logoImage.height;
+            
+            if (logoWidth > maxLogoSize || logoHeight > maxLogoSize) {
+                const ratio = Math.min(maxLogoSize / logoWidth, maxLogoSize / logoHeight);
+                logoWidth *= ratio;
+                logoHeight *= ratio;
+            }
+
+            // Center the logo
+            const x = (canvas.width - logoWidth) / 2;
+            const y = (canvas.height - logoHeight) / 2;
+
+            // Draw logo
+            ctx.drawImage(logoImage, x, y, logoWidth, logoHeight);
+
+            // Download
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'icon.png';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,320 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    DRIVER APPROVAL WORKFLOW - VISUAL DIAGRAM                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          STEP 1: DRIVER REGISTRATION                         │
+│                              (Mobile App)                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    📱 Mobile App
+    ┌──────────────────────┐
+    │  Registration Form   │
+    │  ─────────────────   │
+    │  Name: John Doe      │
+    │  Email: john@...     │
+    │  Password: ****      │
+    │  Role: [Driver]      │
+    │  DOB: 1990-01-01     │
+    │  Phone: 077123...    │
+    │  NIC: 901234567V     │
+    │  Route: Kandy to...  │
+    │                      │
+    │  [Create Account]    │
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌──────────────────────┐
+    │  POST /api/auth/     │
+    │      register        │
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌──────────────────────┐
+    │  Backend Validation  │
+    │  • Age >= 25 ✓       │
+    │  • All fields ✓      │
+    │  • Email unique ✓    │
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌──────────────────────┐
+    │  Create User in DB   │
+    │  driverStatus:       │
+    │    'pending' 🟡      │
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌──────────────────────┐
+    │  ✅ Success Message  │
+    │  "Please wait for    │
+    │   admin approval"    │
+    └──────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    STEP 2: DISPLAY IN FRONTEND DASHBOARD                     │
+│                            (Admin Website)                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    💻 Frontend Website
+    ┌──────────────────────┐
+    │  Admin Login         │
+    │  admin@royalway.com  │
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌──────────────────────┐
+    │  Navigate to         │
+    │  "Drivers" Page      │
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌──────────────────────┐
+    │  GET /api/drivers    │
+    └──────────┬───────────┘
+               │
+               ▼
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║                      DRIVERS TABLE                               ║
+    ╠══════════════════════════════════════════════════════════════════╣
+    ║ Name      │ Email        │ Phone      │ NIC        │ Status      ║
+    ╠═══════════╪══════════════╪════════════╪════════════╪═════════════╣
+    ║ John Doe  │ john@...     │ 077123...  │ 901234567V │ 🟡 Pending  ║
+    ║           │              │            │            │ [Approve]   ║
+    ║           │              │            │            │ [Reject]    ║
+    ╠═══════════╪══════════════╪════════════╪════════════╪═════════════╣
+    ║ Jane Smith│ jane@...     │ 077456...  │ 902345678V │ 🟢 Approved ║
+    ║           │              │            │            │ ✓ Approved  ║
+    ╠═══════════╪══════════════╪════════════╪════════════╪═════════════╣
+    ║ Bob Wilson│ bob@...      │ 077789...  │ 903456789V │ 🔴 Rejected ║
+    ║           │              │            │            │ ✗ Rejected  ║
+    ╚═══════════╧══════════════╧════════════╧════════════╧═════════════╝
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      STEP 3: ADMIN APPROVAL/REJECTION                        │
+│                            (Admin Action)                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    OPTION A: APPROVE                    OPTION B: REJECT
+    ─────────────────                    ────────────────
+    
+    Admin clicks [Approve]               Admin clicks [Reject]
+           │                                     │
+           ▼                                     ▼
+    ┌──────────────────┐               ┌──────────────────┐
+    │ Confirmation     │               │ Confirmation     │
+    │ Dialog           │               │ Dialog           │
+    │ "Are you sure?"  │               │ "Are you sure?"  │
+    │ [Cancel][Approve]│               │ [Cancel][Reject] │
+    └────────┬─────────┘               └────────┬─────────┘
+             │                                   │
+             ▼                                   ▼
+    ┌──────────────────┐               ┌──────────────────┐
+    │ PUT /api/drivers/│               │ PUT /api/drivers/│
+    │   approve/:id    │               │   reject/:id     │
+    └────────┬─────────┘               └────────┬─────────┘
+             │                                   │
+             ▼                                   ▼
+    ┌──────────────────┐               ┌──────────────────┐
+    │ Update Database  │               │ Update Database  │
+    │ driverStatus:    │               │ driverStatus:    │
+    │   'approved' 🟢  │               │   'rejected' 🔴  │
+    └────────┬─────────┘               └────────┬─────────┘
+             │                                   │
+             ▼                                   ▼
+    ┌──────────────────┐               ┌──────────────────┐
+    │ ✅ Success       │               │ ✅ Success       │
+    │ "Driver approved"│               │ "Driver rejected"│
+    └────────┬─────────┘               └────────┬─────────┘
+             │                                   │
+             └───────────────┬───────────────────┘
+                             ▼
+                    ┌──────────────────┐
+                    │ Table Refreshes  │
+                    │ Automatically    │
+                    └──────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        STEP 4: LOGIN CONTROL                                 │
+│                         (Driver Login)                                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    📱 Mobile App - Driver Login
+    ┌──────────────────────┐
+    │  Login Form          │
+    │  ─────────────────   │
+    │  Email: john@...     │
+    │  Password: ****      │
+    │                      │
+    │  [Sign In]           │
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌──────────────────────┐
+    │  POST /api/auth/     │
+    │      login           │
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌──────────────────────┐
+    │  Check Credentials   │
+    │  Email ✓             │
+    │  Password ✓          │
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌──────────────────────┐
+    │  Check driverStatus  │
+    └──────────┬───────────┘
+               │
+        ┌──────┴──────┬──────────┐
+        │             │          │
+        ▼             ▼          ▼
+    ┌────────┐   ┌────────┐  ┌────────┐
+    │Pending │   │Approved│  │Rejected│
+    │  🟡    │   │  🟢    │  │  🔴    │
+    └───┬────┘   └───┬────┘  └───┬────┘
+        │            │           │
+        ▼            ▼           ▼
+    ┌────────┐   ┌────────┐  ┌────────┐
+    │ ❌ Block│   │✅ Allow│  │ ❌ Block│
+    │ Login  │   │ Login  │  │ Login  │
+    └───┬────┘   └───┬────┘  └───┬────┘
+        │            │           │
+        ▼            ▼           ▼
+    ┌────────┐   ┌────────┐  ┌────────┐
+    │"Pending│   │ Driver │  │"Account│
+    │approval"│   │Dashboard│  │rejected"│
+    └────────┘   └────────┘  └────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          STATUS FLOW DIAGRAM                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    Registration
+         │
+         ▼
+    ┌─────────┐
+    │ PENDING │ 🟡
+    │ Status  │
+    └────┬────┘
+         │
+         │ Admin Decision
+         │
+    ┌────┴────┐
+    │         │
+    ▼         ▼
+┌─────────┐ ┌─────────┐
+│APPROVED │ │REJECTED │
+│ Status  │ │ Status  │
+│   🟢    │ │   🔴    │
+└────┬────┘ └────┬────┘
+     │           │
+     ▼           ▼
+┌─────────┐ ┌─────────┐
+│Can Login│ │ Cannot  │
+│   ✅    │ │ Login ❌│
+└─────────┘ └─────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          DATABASE SCHEMA                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    User Collection (MongoDB)
+    ┌──────────────────────────────────────┐
+    │ _id: ObjectId                        │
+    │ name: "John Doe"                     │
+    │ email: "john@test.com"               │
+    │ password: "hashed_password"          │
+    │ role: "driver"                       │
+    │                                      │
+    │ // Driver-specific fields            │
+    │ dateOfBirth: Date                    │
+    │ phoneNumber: "0771234567"            │
+    │ nicNumber: "901234567V"              │
+    │ driverLicenseImage: "DL123456"       │
+    │ assignedRoute: "Kandy to Kurunegala" │
+    │                                      │
+    │ driverStatus: "pending" 🟡           │
+    │   ↓ (can be)                         │
+    │   • "pending"   🟡                   │
+    │   • "approved"  🟢                   │
+    │   • "rejected"  🔴                   │
+    │                                      │
+    │ createdAt: Date                      │
+    │ updatedAt: Date                      │
+    └──────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          API ENDPOINTS                                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    POST   /api/auth/register
+    ├─> Creates driver with driverStatus='pending'
+    └─> Returns: User object + JWT token
+
+    POST   /api/auth/login
+    ├─> Checks driverStatus before allowing login
+    └─> Returns: User object + JWT token (if approved)
+
+    GET    /api/drivers
+    ├─> Fetches all drivers from database
+    └─> Returns: Array of driver objects
+
+    PUT    /api/drivers/approve/:id
+    ├─> Updates driverStatus to 'approved'
+    └─> Returns: Updated driver object
+
+    PUT    /api/drivers/reject/:id
+    ├─> Updates driverStatus to 'rejected'
+    └─> Returns: Updated driver object
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          SYSTEM COMPONENTS                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────┐         ┌──────────────┐         ┌──────────────┐
+    │  Mobile App  │◄───────►│   Backend    │◄───────►│   MongoDB    │
+    │ (React Native)│         │(Node.js/Express)       │  (Database)  │
+    └──────────────┘         └──────────────┘         └──────────────┘
+           │                        ▲
+           │                        │
+           │                        │
+           ▼                        │
+    ┌──────────────┐                │
+    │   Frontend   │────────────────┘
+    │   (React)    │
+    └──────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          SUCCESS INDICATORS                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    ✅ Driver registers successfully
+    ✅ driverStatus set to 'pending'
+    ✅ Driver appears in frontend table
+    ✅ All details displayed correctly
+    ✅ Pending driver cannot login
+    ✅ Admin can approve driver
+    ✅ Status updates to 'approved'
+    ✅ Approved driver can login
+    ✅ Admin can reject driver
+    ✅ Status updates to 'rejected'
+    ✅ Rejected driver cannot login
+    ✅ Clear error messages for each status
+    ✅ Table refreshes automatically
+    ✅ Confirmation dialogs work
+    ✅ Age validation (25+) works
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                          SYSTEM STATUS: ✅ OPERATIONAL                        ║
+╚══════════════════════════════════════════════════════════════════════════════╝

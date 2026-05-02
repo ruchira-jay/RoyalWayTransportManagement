@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>RoyalWay API Test</h1>
+    <button onclick="testAPIs()">Test All APIs</button>
+    <div id="results"></div>
+
+    <script>
+        async function testAPIs() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                // Test Drivers API
+                const driversRes = await fetch('http://localhost:3000/api/drivers');
+                const drivers = await driversRes.json();
+                
+                // Test Students API
+                const studentsRes = await fetch('http://localhost:3000/api/students');
+                const students = await studentsRes.json();
+                
+                // Test Notifications API
+                const notificationsRes = await fetch('http://localhost:3000/api/notifications');
+                const notifications = await notificationsRes.json();
+                
+                results.innerHTML = `
+                    <h2>✅ API Test Results:</h2>
+                    <p><strong>Drivers:</strong> ${drivers.length} found</p>
+                    <p><strong>Students:</strong> ${students.length} found</p>
+                    <p><strong>Notifications:</strong> ${notifications.length} found</p>
+                    <hr>
+                    <h3>Driver Stats:</h3>
+                    <p>Approved: ${drivers.filter(d => d.driverStatus === 'approved').length}</p>
+                    <p>Pending: ${drivers.filter(d => d.driverStatus === 'pending').length}</p>
+                    <p>Rejected: ${drivers.filter(d => d.driverStatus === 'rejected').length}</p>
+                `;
+            } catch (error) {
+                results.innerHTML = `
+                    <h2>❌ Error:</h2>
+                    <p>${error.message}</p>
+                    <p>Make sure backend is running on port 3000</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
