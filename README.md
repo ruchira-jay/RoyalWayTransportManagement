@@ -315,4 +315,4 @@ For issues and questions:
 
 ---
 
-**© 2024 RoyalWay. All rights reserved.**
+**© 2026 RoyalWay. All rights reserved.**
